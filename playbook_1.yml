@@ -1,0 +1,36 @@
+---
+- hosts: webservers
+  become: true
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+    - name: Install latest version of Apache
+      yum: 
+        name: httpd 
+        update_cache: yes
+        state: latest
+    
+    - name: Check-apache
+      service:
+        name: httpd
+        state: started
+
+    - name: Create empty index.html
+      file:
+        path: "{{ index_path }}"
+        state: touch
+        owner: "{{ app_user }}"
+        mode: '0755'
+
+    - name: Add text to index.html
+      lineinfile:
+        path: "{{ index_path }}"
+        line: 'Welcome to my web server'
+
+    - name: Enable http port
+      firewalld:
+        service: http
+        permanent: true
+        state: enabled
+...
